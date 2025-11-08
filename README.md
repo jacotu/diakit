@@ -29,10 +29,6 @@ A creative playground for generating and exploring dynamic, abstract diagrams th
 
 Diakit was born from a fascination with the beauty of random diagrams and their potential for creating abstract art. It's a tool that helps you explore the fascinating interplay of nodes and connections, turning mathematical patterns into captivating visual experiences.
 
-## Deployment
-
-Deployed with [Vercel](https://vercel.com) for seamless sharing and collaboration.
-
 ## Contributing
 
 Contributions are welcome! Feel free to open issues or submit pull requests.
