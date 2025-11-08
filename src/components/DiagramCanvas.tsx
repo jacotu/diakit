@@ -309,7 +309,10 @@ function drawDiagram(
     if (node.label && node.label.trim()) {
       ctx.save();
       ctx.fillStyle = params.strokeColor;
-      ctx.font = '12px AzeretMono, ui-monospace, monospace';
+      
+      // Base font size that will scale with node size
+      const baseFontSize = Math.min(node.width, node.height) * 0.5; // Adjust this factor to your preference
+      ctx.font = `bold ${baseFontSize}px AzeretMono, ui-monospace, monospace`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       
@@ -317,17 +320,64 @@ function drawDiagram(
       const textX = node.x + node.width / 2;
       const textY = node.y + node.height / 2;
       
-      // Measure text to ensure it fits
-      const metrics = ctx.measureText(node.label);
-      const textWidth = metrics.width;
+      // Function to get text width with current font
+      const getTextWidth = (text: string) => {
+        const metrics = ctx.measureText(text);
+        return metrics.width;
+      };
       
-      // If text is too wide, scale it down
-      if (textWidth > node.width - 8) {
-        const scale = (node.width - 8) / textWidth;
-        ctx.font = `${12 * scale}px AzeretMono, ui-monospace, monospace`;
+      // Function to wrap text
+      const wrapText = (text: string, maxWidth: number) => {
+        const words = text.split(' ');
+        const lines: string[] = [];
+        let currentLine = words[0];
+        
+        for (let i = 1; i < words.length; i++) {
+          const word = words[i];
+          const width = getTextWidth(currentLine + ' ' + word);
+          
+          if (width < maxWidth) {
+            currentLine += ' ' + word;
+          } else {
+            lines.push(currentLine);
+            currentLine = word;
+          }
+        }
+        lines.push(currentLine);
+        return lines;
+      };
+      
+      // Calculate available width and height (with padding)
+      const padding = 8;
+      const maxWidth = node.width - (padding * 2);
+      const maxHeight = node.height - (padding * 2);
+      
+      // Adjust font size to fit width
+      let fontSize = baseFontSize;
+      let lines: string[] = [];
+      
+      // Try to fit text with word wrapping
+      while (fontSize > 8) { // Minimum font size
+        ctx.font = `bold ${fontSize}px AzeretMono, ui-monospace, monospace`;
+        lines = wrapText(node.label, maxWidth);
+        const lineHeight = fontSize * 1.2;
+        const totalHeight = lines.length * lineHeight;
+        
+        if (totalHeight <= maxHeight) {
+          break;
+        }
+        
+        fontSize -= 1;
       }
       
-      ctx.fillText(node.label, textX, textY);
+      // Draw each line of text
+      const lineHeight = fontSize * 1.2;
+      const startY = textY - ((lines.length - 1) * lineHeight) / 2;
+      
+      lines.forEach((line, i) => {
+        ctx.fillText(line, textX, startY + (i * lineHeight));
+      });
+      
       ctx.restore();
     }
   });
